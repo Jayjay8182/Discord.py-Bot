@@ -7,6 +7,7 @@ __pycache__/
 token.txt
 Bot/
 .vscode/
+GMICImage.jpg
 
 # C extensions
 *.so
