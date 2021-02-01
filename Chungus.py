@@ -11,15 +11,12 @@ import ast
 import time
 from collections.abc import Sequence
 import praw
-from praw import Reddit
 
 # reading token from file
 def read_token():
     with open("token.txt", "r") as f:
         lines = f.readlines()
         return lines[0].strip()
-
-Client.fetch_user
 
 # defining stuff
 token = read_token()
@@ -78,21 +75,50 @@ reddit = praw.Reddit(client_id = 'gdzJMO43TXWAMA',
                      password = 'BigChungus',
                      user_agent = 'DiscBot')
 
-@client.command(pass_context = True)
-async def top(ctx, arg):
-    subreddit = reddit.subreddit(arg)
 
-    top_subreddit = subreddit.top(limit=100)
-    topPosts = []
+@client.command(pass_context = True)
+async def redditposts(ctx, subName, type="top", timeframe="all"):
+    sub = reddit.subreddit(subName)
+    timeFilter = "all"
+    filter = "top"
+    subreddit_category_posts = sub.top("all", limit=100)
+
+    if str(timeframe).lower() == "hour":
+        timeFilter = "hour"
+    elif str(timeframe).lower() == "day":
+        timeFilter = "day"
+    elif str(timeframe).lower() == "week":
+        timeFilter = "week"
+    elif str(timeframe).lower() == "month":
+        timeFilter = "month"
+    elif str(timeframe).lower() == "all":
+        timeFilter = "all"
+
+    if str(type).lower() == "top":
+        subreddit_category_posts = sub.top(timeFilter, limit=100)
+        filter = "Top"
+    elif str(type).lower() == "hot":
+        subreddit_category_posts = sub.hot(limit=100)
+        filter = "Hot"
+    elif str(type).lower() == "new":
+        timeFilter = "all"
+        subreddit_category_posts = sub.new(limit=100)
+        filter = "New"
+    elif str(type).lower() == "controversial":
+        subreddit_category_posts = sub.controversial(timeFilter, limit=100)
+        filter = "Controversial"
+
+
+    Posts = []
     postTitles = []
     count = 0
 
-    for submission in top_subreddit:
+    for submission in subreddit_category_posts:
         if not submission.stickied:
-            topPosts.append(submission.url)
+            Posts.append(submission.url)
             postTitles.append(submission.title)
 
-    reacted_message = await ctx.send("**Top posts in "+str(arg)+"**\npost `"+str(count+1)+'/'+str(len(topPosts))+"`\n> "+(postTitles[count])+'\n'+topPosts[count])
+    reacted_message = await ctx.send("**"+filter + " posts in " + str(subName) + "**\n**Timeframe: " + timeFilter +"**\npost `" + str(count + 1) + '/' + str(len(Posts)) + "`\n> " + (postTitles[count]) + '\n' + Posts[count])
 
     await discord.Message.add_reaction(reacted_message, emoji="⏪")
     await discord.Message.add_reaction(reacted_message, emoji="⬅️")
@@ -109,38 +135,36 @@ async def top(ctx, arg):
             reaction, user = await client.wait_for('reaction_add', timeout=90.0, check=check)
             if reaction.emoji == '➡️':
                 count += 1
-                if count == (len(topPosts)):
+                if count == (len(Posts)):
                     count = 0
-                await discord.Message.edit(reacted_message, content ="**Top posts in "+str(arg)+"**\npost `"+str(count+1)+'/'+str(len(topPosts))+"`\n> "+(postTitles[count])+'\n'+topPosts[count])
+                await discord.Message.edit(reacted_message, content ="**"+filter + " posts in " + str(subName) + "**\n**Timeframe: " + timeFilter +"**\npost `" + str(count + 1) + '/' + str(len(Posts)) + "`\n> " + (postTitles[count]) + '\n' + Posts[count])
             elif reaction.emoji == '⬅️':
                 count -= 1
                 if count == -1:
-                    count = (len(topPosts)-1)
-                await discord.Message.edit(reacted_message, content ="**Top posts in "+str(arg)+"**\npost `"+str(count+1)+'/'+str(len(topPosts))+"`\n> "+(postTitles[count])+'\n'+topPosts[count])
+                    count = (len(Posts)-1)
+                await discord.Message.edit(reacted_message, content ="**"+filter + " posts in " + str(subName) + "**\n**Timeframe: " + timeFilter +"**\npost `" + str(count + 1) + '/' + str(len(Posts)) + "`\n> " + (postTitles[count]) + '\n' + Posts[count])
             elif reaction.emoji == '⏩':
-                count = (len(topPosts)-1)
-                await discord.Message.edit(reacted_message, content ="**Top posts in "+str(arg)+"**\npost `"+str(count+1)+'/'+str(len(topPosts))+"`\n> "+(postTitles[count])+'\n'+topPosts[count])
+                count = (len(Posts)-1)
+                await discord.Message.edit(reacted_message, content ="**"+filter + " posts in " + str(subName) + "**\n**Timeframe: " + timeFilter +"**\npost `" + str(count + 1) + '/' + str(len(Posts)) + "`\n> " + (postTitles[count]) + '\n' + Posts[count])
             elif reaction.emoji == '⏪':
                 count = 0
-                await discord.Message.edit(reacted_message, content ="**Top posts in "+str(arg)+"**\npost `"+str(count+1)+'/'+str(len(topPosts))+"`\n> "+(postTitles[count])+'\n'+topPosts[count])
+                await discord.Message.edit(reacted_message, content ="**"+filter + " posts in " + str(subName) + "**\n**Timeframe: " + timeFilter +"**\npost `" + str(count + 1) + '/' + str(len(Posts)) + "`\n> " + (postTitles[count]) + '\n' + Posts[count])
             elif reaction.emoji == '🔀':
-                count = random.randint(0, len(topPosts))            
-                await discord.Message.edit(reacted_message, content ="**Top posts in "+str(arg)+"**\npost `"+str(count+1)+'/'+str(len(topPosts))+"`\n> "+(postTitles[count])+'\n'+topPosts[count])
+                count = random.randint(0, len(Posts))
+                await discord.Message.edit(reacted_message, content ="**"+filter + " posts in " + str(subName) + "**\n**Timeframe: " + timeFilter +"**\npost `" + str(count + 1) + '/' + str(len(Posts)) + "`\n> " + (postTitles[count]) + '\n' + Posts[count])
             elif reaction.emoji == '❌':
                 react_cross = True
                 await discord.Message.delete(reacted_message)
 
         except TimeoutError:
-                await discord.Message.edit(reacted_message, content ="**Top posts in "+str(arg)+"**\npost `"+str(count+1)+'/'+str(len(topPosts))+"`\n> "+(postTitles[count])+'\n'+topPosts[count]+"\n Timed out")
-    
-
+            await discord.Message.edit(reacted_message, content ="**"+filter + " posts in " + str(subName) + "**\n**Timeframe: " + timeFilter +"**\npost `" + str(count + 1) + '/' + str(len(Posts)) + "`\n> " + (postTitles[count]) + '\n' + Posts[count] + "\n**Timed Out")
 
 # img command, uses web scraping to store images in a list and allows the user to scroll through them by adding reactions
 @client.command(pass_context = True)
 async def img(ctx, *args):
     term = (" ".join(args))
-    url = "https://www.bing.com/images/search?q="+term+"&form=HDRSC2&safeSearch=off&mkt=en-US"
-    USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101 Firefox/78.0"
+    url = 'https://bing.com/images/search?q=' + term + '&safeSearch=off' + "&FORM=HDRSC2" + '&count=100' + '&mkt=en-US' + '&adlt_set=off'
+    USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.134 Safari/537.36"
     headers = {"user-agent": USER_AGENT}
     page = requests.get(url, headers=headers)
     soup = BeautifulSoup(page.content, "html.parser")
@@ -244,8 +268,9 @@ async def run(ctx, *, cmd):
             'commands': commands,
             'ctx': ctx,
             'time': time,
-            'Client': Client,
-            '__import__': __import__
+            'client': client,
+            '__import__': __import__,
+            'reddit': reddit
         }
         exec(compile(parsed, filename="<ast>", mode="exec"), env)
 
@@ -294,5 +319,29 @@ async def help(ctx):
         commandsEmbed.set_thumbnail(url=(client.user.avatar_url))
         await ctx.channel.send(embed=commandsEmbed)
 
+# sudo command to mimic user using a webhook
+@client.command()
+async def sudo(ctx, user, *message):
+
+    user_to_copy = ctx.author
+
+    if ctx.message.mentions:
+        user_to_copy = ctx.message.mentions[0]
+    else:
+        for member in ctx.guild.members:
+            if member.id == user or client.get_user(member.id).name == user or member.display_name == user:
+                user_to_copy = member
+                break
+
+    sudoText = " ".join(message)
+    await ctx.message.delete()
+    webhook = await ctx.channel.create_webhook(name=user_to_copy.display_name)
+    await webhook.send(content=sudoText, avatar_url=user_to_copy.avatar_url)
+    await webhook.delete()
+
+# shows the bots ping
+@client.command()
+async def ping(ctx):
+    await ctx.send("`"+str(int(client.latency*1000))+"`ms")
 
 client.run(client.config_token)
