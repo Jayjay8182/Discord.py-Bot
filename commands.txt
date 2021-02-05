@@ -2,7 +2,9 @@
 `help` shows the list of commands
 `serverinfo` displays information about the server
 `mimic (your text)` mimics your message
-`roll (lowestValue highestValue)` rolls a number from a range
+`sudo (username or mention or id + message)` pretends to be that user and sends that message
+`roll (lowestValue + highestValue)` rolls a number from a range
 `img (search term)` shows images results for your term
-`top (subreddit name)` shows the top 100 posts on a subreddit
-`run` owner only command
+`redditposts (subreddit name + type + timeframe)` shows 100 posts on a subreddit based on your filters
+`type(top/hot/new/controversial)` `timeframe(hour/day/week/month/all)`
+`ping` shows the latency of the bot
