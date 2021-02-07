@@ -69,11 +69,11 @@ async def mimic(ctx, *args):
         await ctx.message.delete()
         await ctx.send(" ".join(args))
 
-reddit = praw.Reddit(client_id = 'gdzJMO43TXWAMA',
-                     client_secret = 'mOoE4bNoJd1A7xJ6zTcWO_b40JY',
-                     username = 'MeGustaChungus',
-                     password = 'BigChungus',
-                     user_agent = 'DiscBot')
+reddit = praw.Reddit(client_id = '',
+                     client_secret = '',
+                     username = '',
+                     password = '',
+                     user_agent = '')
 
 
 @client.command(pass_context = True)
